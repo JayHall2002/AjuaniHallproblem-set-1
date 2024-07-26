@@ -16,18 +16,26 @@ def download_dataset(url, save_path):
     """
     response = requests.get(url)
     if response.status_code == 200:
-        # Debug: Print response text
-        print(response.text[:500])  # Print the first 500 characters of the response for debugging
-        
-        try:
-            data = response.json()
-            with open(save_path, 'w') as file:
-                json.dump(data, file)
-            print(f"Dataset downloaded and saved to {save_path}")
-        except json.JSONDecodeError as e:
-            print(f"JSON decoding failed: {e}")
+        # Save the raw text response
+        with open(save_path, 'w') as file:
+            file.write(response.text)
+        print(f"Dataset downloaded and saved to {save_path}")
     else:
         print("Failed to download dataset")
+
+def load_dataset(file_path):
+    """
+    Loads the dataset from the specified file path, reading line by line to handle multiple JSON objects.
+    """
+    data = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            try:
+                movie = json.loads(line)
+                data.append(movie)
+            except json.JSONDecodeError as e:
+                print(f"JSON decoding failed: {e}")
+    return data
 
 # Call functions / instantiate objects from the two analysis .py files
 def main():
@@ -42,8 +50,7 @@ def main():
     download_dataset(url, save_path)
     
     # Load the dataset
-    with open(save_path, 'r') as file:
-        data = json.load(file)
+    data = load_dataset(save_path)
     
     # Call analysis functions
     analysis_network_centrality.run_analysis(data)
