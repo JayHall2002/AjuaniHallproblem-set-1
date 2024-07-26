@@ -16,9 +16,16 @@ def download_dataset(url, save_path):
     """
     response = requests.get(url)
     if response.status_code == 200:
-        with open(save_path, 'w') as file:
-            json.dump(response.json(), file)
-        print(f"Dataset downloaded and saved to {save_path}")
+        # Debug: Print response text
+        print(response.text[:500])  # Print the first 500 characters of the response for debugging
+        
+        try:
+            data = response.json()
+            with open(save_path, 'w') as file:
+                json.dump(data, file)
+            print(f"Dataset downloaded and saved to {save_path}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decoding failed: {e}")
     else:
         print("Failed to download dataset")
 
