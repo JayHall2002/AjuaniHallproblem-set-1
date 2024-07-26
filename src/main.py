@@ -9,9 +9,11 @@ import os
 import analysis_network_centrality
 import analysis_similar_actors_genre
 
-# Ingest and save the imbd_movies dataset
+# Ingest and save the IMDb movies dataset
 def download_dataset(url, save_path):
-
+    """
+    Downloads the dataset from the specified URL and saves it to the given path.
+    """
     response = requests.get(url)
     if response.status_code == 200:
         with open(save_path, 'w') as file:
@@ -20,10 +22,9 @@ def download_dataset(url, save_path):
     else:
         print("Failed to download dataset")
 
-
-# Call functions / instanciate objects from the two analysis .py files
+# Call functions / instantiate objects from the two analysis .py files
 def main():
-   # Define the URL and the save path for the dataset
+    # Define the URL and the save path for the dataset
     url = "https://github.com/cbuntain/umd.inst414/blob/main/data/imdb_movies_2000to2022.prolific.json?raw=true"
     save_path = os.path.join('data', 'imdb_movies_2000to2022.prolific.json')
     
@@ -40,7 +41,6 @@ def main():
     # Call analysis functions
     analysis_network_centrality.run_analysis(data)
     analysis_similar_actors_genre.run_analysis(data)
-
 
 if __name__ == "__main__":
     main()
