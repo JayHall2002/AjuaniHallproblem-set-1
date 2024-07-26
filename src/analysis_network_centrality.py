@@ -11,47 +11,55 @@ Using the imbd_movies dataset
 import numpy as np
 import pandas as pd
 import networkx as nx
+import os
+from datetime import datetime
 
 # Build the graph
 g = nx.Graph()
 
-# Set up your dataframe(s) -> the df that's output to a CSV should include at least the columns 'left_actor_name', '<->', 'right_actor_name'
-
-
-with open() as in_file:
-    # Don't forget to comment your code
-    for line in in_file:
-        # Don't forget to include docstrings for all functions
-
-        # Load the movie from this line
-        this_movie = json.loads(line)
-            
-        # Create a node for every actor
-        for actor_id,actor_name in this_movie['actors']:
-        # add the actor to the graph    
-        # Iterate through the list of actors, generating all pairs
-        ## Starting with the first actor in the list, generate pairs with all subsequent actors
-        ## then continue to second actor in the list and repeat
+# Function to run analysis
+def run_analysis(data):
+    """
+    Builds a graph from the IMDb movies dataset and performs network centrality analysis.
+    """
+    # Add nodes and edges to the graph
+    for movie in data:
+        actors = movie['actors']
         
-        i = 0 #counter
-        for left_actor_id,left_actor_name in this_movie['actors']:
-            for right_actor_id,right_actor_name in this_movie['actors'][i+1:]:
-
+        # Create a node for every actor
+        for actor_id, actor_name in actors:
+            g.add_node(actor_id, name=actor_name)
+        
+        # Iterate through the list of actors, generating all pairs
+        for i in range(len(actors)):
+            for j in range(i + 1, len(actors)):
+                left_actor_id, left_actor_name = actors[i]
+                right_actor_id, right_actor_name = actors[j]
+                
                 # Get the current weight, if it exists
-                
-                
-                # Add an edge for these actors
-                
-                
-                
-            i += 1 
+                if g.has_edge(left_actor_id, right_actor_id):
+                    g[left_actor_id][right_actor_id]['weight'] += 1
+                else:
+                    # Add an edge for these actors
+                    g.add_edge(left_actor_id, right_actor_id, weight=1)
 
+    # Print the info below
+    print("Nodes:", len(g.nodes))
 
-# Print the info below
-print("Nodes:", len(g.nodes))
+    # Print the 10 most central nodes
+    centrality = nx.degree_centrality(g)
+    sorted_centrality = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:10]
+    for actor_id, cent in sorted_centrality:
+        print(f"Actor ID: {actor_id}, Centrality: {cent}")
 
-#Print the 10 the most central nodes
+    # Create a DataFrame to save the results
+    edge_data = [
+        (g.nodes[left]['name'], '<->', g.nodes[right]['name'], g[left][right]['weight'])
+        for left, right in g.edges
+    ]
+    df = pd.DataFrame(edge_data, columns=['left_actor_name', '<->', 'right_actor_name', 'weight'])
 
-
-# Output the final dataframe to a CSV named 'network_centrality_{current_datetime}.csv' to `/data`
-
+    # Save the DataFrame to a CSV file
+    output_path = os.path.join('output', f'network_centrality_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
+    df.to_csv(output_path, index=False)
+    print(f"Network centrality analysis complete. Results saved to '{output_path}'")
